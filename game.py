@@ -26,17 +26,17 @@ class Game:
         #     self.stars.append(GridPoint(game=self, pt=Vector(x, 925)))
 
         self.stars = [GridPoint(game=self, pt=Vector(x,925),
-                                index=index, adj_list=adj_list) for (index,x,adj_list) in [(0, 70, [1, 10]),
+                                index=index, adj_list=adj_list) for (index,x,adj_list) in [(0, 70, [1, 11]),
                                                                                            (1, 120, [0, 2]),
                                                                                            (2, 210, [1, 3]),
                                                                                            (3, 310, [2, 4]),
-                                                                                           (4, 400, [3, 5, 14]),
+                                                                                           (4, 400, [3, 5, 15]),
                                                                                            (5, 450, [4, 6]),
-                                                                                           (6, 500, [5, 7, 16]),
+                                                                                           (6, 500, [5, 7, 17]),
                                                                                            (7, 590, [6, 8]),
                                                                                            (8, 690, [7, 9]),
                                                                                            (9, 780, [8, 10]),
-                                                                                           (10, 830, [9, 20])]]
+                                                                                           (10, 830, [9, 21])]]
 
         self.stars1 = [GridPoint(game=self, pt=Vector(x,831),
                                  index=index, adj_list=adj_list) for (index,x,adj_list) in [(11, 70, [0, 12]),
@@ -140,7 +140,7 @@ class Game:
         prev = self.stars[5]
 
         self.pacman = Pacman(game=self, v=Vector(-1, 0), pt=prev.pt, grid_pt_next=nxt, grid_pt_prev=prev)
-        # self.ghost = Ghost(game=self)
+        self.ghost = Ghost(game=self, v=Vector(0, 0), pt=self.stars5[5].pt, grid_pt_next=self.stars6[3], grid_pt_prev=self.stars5[5])
 
         self.grid = self.create_grid()
         self.finished = False
@@ -159,7 +159,7 @@ class Game:
         row7 = copy(row3)
         row8 = [x for x in range(11) if x not in [1, 5, 9]]
         row9 = copy(row3)
-        rows = [row0, row1, row2, row3, row4, row5, row6, row7, row8, row8]
+        rows = [row0, row1, row2, row3, row4, row5, row6, row7, row8, row8, row9]
 
         i = 0
         for row in rows:
@@ -173,6 +173,7 @@ class Game:
             # self.screen.fill(self.settings.bg_color)
             self.maze.update()
             self.pacman.update()
+            self.ghost.update()
             for star in self.stars_stars:
                 star.update()
             # self.ghost.update()
