@@ -8,7 +8,7 @@ di = {pg.K_RIGHT: Vector(1, 0), pg.K_LEFT: Vector(-1, 0),
       pg.K_UP: Vector(0, -1), pg.K_DOWN: Vector(0, 1)}
 
 
-def check_keydown_events(event, pacman, stars):
+def check_keydown_events(event, pacman, stars, ghost):
     global swapped
     if event.key in li and not swapped:
         v, new_dir = pacman.v, di[event.key]
@@ -22,9 +22,12 @@ def check_keydown_events(event, pacman, stars):
         delta = (v.x if v.y == 0 else -11 * v.y)
 
         pacman.grid_pt_prev = pacman.grid_pt_next
-        print(pacman.grid_pt_next.adj_list)
         index = int(pacman.grid_pt_next.index + delta)
         pacman.grid_pt_next.make_normal()
+        if index == 54:
+            index = 65
+        elif index == 66:
+            index = 55
         for star in stars:
             if star.index == index:
                 if index in pacman.grid_pt_next.adj_list:
@@ -59,6 +62,6 @@ def check_events(game):
             mouse_x, mouse_y = pg.mouse.get_pos()
             # check_play_button(stats=game.stats, play_button=game.play_button, mouse_x=mouse_x, mouse_y=mouse_y)
         elif event.type == pg.KEYDOWN:
-            check_keydown_events(event=event, pacman=game.pacman, stars=game.stars_stars)
+            check_keydown_events(event=event, pacman=game.pacman, stars=game.stars_stars, ghost=game.ghost)
         elif event.type == pg.KEYUP:
             check_keyup_events(event=event, pacman=game.pacman)

@@ -19,6 +19,7 @@ class Game:
         self.font = pg.font.SysFont(None, 48)
 
         self.maze = Maze(game=self)
+        self.last_updated = None
 
         # li = [70, 400, 500, 830]
         # self.stars = []
@@ -77,9 +78,9 @@ class Game:
                                                                                               (47, 310, [58, 48, 36]),
                                                                                               (48, 400, [47, 49]),
                                                                                               (49, 450, [48, 50]),
-                                                                                              (50, 500, [49, 61]),
+                                                                                              (50, 500, [49, 51]),
                                                                                               (51, 590, [62, 50, 40]),
-                                                                                              (52, 690, [41, 63])]]
+                                                                                              (52, 690, [41, 53])]]
         self.stars5 = [GridPoint(game=self, pt=Vector(x, 445),
                                  index=index, adj_list=adj_list) for (index, x, adj_list) in [(55, 70,  [65, 56]),
                                                                                               (56, 120, [55, 57]),
@@ -96,10 +97,10 @@ class Game:
                                  index=index, adj_list=adj_list) for (index, x, adj_list) in [(68, 210, [57, 79]),
                                                                                               (69, 310, [58, 70]),
                                                                                               (70, 400, [69, 71, 81]),
-                                                                                              (71, 450, [60, 70, 72]),
+                                                                                              (71, 450, [70, 72]),
                                                                                               (72, 500, [71, 73, 83]),
                                                                                               (73, 590, [72, 62]),
-                                                                                              (74, 690, [62, 85])]]
+                                                                                              (74, 690, [63, 85])]]
         self.stars7 = [GridPoint(game=self, pt=Vector(x, 255),
                                  index=index, adj_list=adj_list) for (index, x, adj_list) in [(77, 70, [88, 78]),
                                                                                               (78, 120, [77, 79]),
@@ -136,11 +137,13 @@ class Game:
                                                                                               (109, 830, [108, 98])]]
         self.stars_stars = self.stars + self.stars1 + self.stars2 + self.stars3 + self.stars4 + self.stars5 + self.stars6 + self.stars7 + self.stars8 + self.stars9
 
-        nxt = self.stars[4]
-        prev = self.stars[5]
+        # nxt = self.stars2[5]
+        # prev = self.stars2[5]
+        nxt = self.stars[0]
+        prev = self.stars[0]
 
-        self.pacman = Pacman(game=self, v=Vector(-1, 0), pt=prev.pt, grid_pt_next=nxt, grid_pt_prev=prev)
-        self.ghost = Ghost(game=self, v=Vector(0, 0), pt=self.stars5[5].pt, grid_pt_next=self.stars6[3], grid_pt_prev=self.stars5[5])
+        self.pacman = Pacman(game=self, v=Vector(0, 0), pt=prev.pt, grid_pt_next=nxt, grid_pt_prev=prev)
+        self.ghost = Ghost(game=self, v=Vector(0, 0), pt=self.stars6[3].pt, grid_pt_next=self.stars6[3], grid_pt_prev=self.stars6[3], pacman=self.pacman, stars=self.stars_stars)
 
         self.grid = self.create_grid()
         self.finished = False
@@ -173,10 +176,17 @@ class Game:
             # self.screen.fill(self.settings.bg_color)
             self.maze.update()
             self.pacman.update()
-            self.ghost.update()
             for star in self.stars_stars:
                 star.update()
-            # self.ghost.update()
+
+            now = pg.time.get_ticks()
+            if self.last_updated is None:
+                self.last_updated = pg.time.get_ticks()
+                self.ghost.chase()
+            elif now > self.last_updated + 1000:
+                self.ghost.chase()
+                self.last_updated = pg.time.get_ticks()
+            self.ghost.update()
             pg.display.flip()
 
 def main():

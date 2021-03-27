@@ -1,8 +1,9 @@
 import pygame as pg
-from math import atan2
+from math import atan2, sqrt
 from vector import Vector
 from timer import Timer
 from settings import Settings
+import time
 
 
 class Character:
@@ -32,13 +33,17 @@ class Character:
         self.pt.x = max(0, min(self.pt.x, screen.width))
         self.pt.y = max(0, min(self.pt.y, screen.height))
 
-    def enterPortal(self): pass
+    def enterPortal(self):
+        pass
 
-    def at_dest(self): return self.pt == self.grid_pt_next.pt
+    def at_dest(self):
+        return self.pt == self.grid_pt_next.pt
 
-    def at_source(self): return self.pt == self.grid_pt_prev.pt
+    def at_source(self):
+        return self.pt == self.grid_pt_prev.pt
 
-    def on_star(self): return self.at_dest() or self.at_source()
+    def on_star(self):
+        return self.at_dest() or self.at_source()
 
     def reverse(self):
         temp = self.grid_pt_prev
@@ -70,13 +75,18 @@ class Character:
             self.prev = self.pt
             self.pt += self.scale_factor * self.v
         self.clamp()
+        if self.pt.x == 0:
+            self.pt = Vector(900, 445)
+        elif self.pt.x == 900:
+            self.pt = Vector(0, 445)
         if self.pt != self.last:
             print(f'{self.name}@{self.pt} -- next is: {self.grid_pt_next.pt}')
             self.last = self.pt
         self.rect.centerx, self.rect.centery = self.pt.x, self.pt.y
         self.draw()
 
-    def draw(self): self.screen.blit(self.image, self.rect)
+    def draw(self):
+        self.screen.blit(self.image, self.rect)
 
 
 class Pacman(Character):
@@ -85,9 +95,13 @@ class Pacman(Character):
                          v=v, pt=pt, grid_pt_next=grid_pt_next, grid_pt_prev=grid_pt_prev)
 
     def killGhost(self): pass
+
     def eatPoint(self): pass
+
     def eatFruit(self): pass
+
     def eatPowerPill(self): pass
+
     def firePortalGun(self, color): pass
     # def update(self):  self.draw()
 
@@ -95,16 +109,96 @@ class Pacman(Character):
 
 
 class Ghost(Character):
-    def __init__(self, game, v, pt, grid_pt_next, grid_pt_prev, name="Pinky", filename="alien10.png", scale=0.8):
+    def __init__(self, game, v, pt, grid_pt_next, grid_pt_prev, pacman, stars, name="Pinky", filename="alien10.png",
+                 scale=0.8):
         super().__init__(game, v=v, pt=pt, grid_pt_next=grid_pt_next, grid_pt_prev=grid_pt_prev, name=name,
                          filename=filename, scale=scale)
+        # self.screen, self.screen_rect = game.screen, game.screen.get_rect()
+        self.pacman = pacman
+        self.stars = stars
+        self.last = pt
+        self.current = grid_pt_next.index
 
-    def switchToChase(self): pass
-    def switchToRun(self): pass
-    def switchToFlicker(self): pass
-    def switchToIdle(self): pass
-    def die(self): pass
-    def killPacman(self): pass
-    # def update(self):  self.draw()
+    def chase(self):
+        best = None
+        route = None
+        for adjacency in self.grid_pt_next.adj_list:
+            for star in self.stars:
+                if star.index == adjacency:
+                    delta = star.pt - self.pacman.pt
+                    h = sqrt(delta.x * delta.x + delta.y * delta.y)
+            if best is None and route is None or best > h:
+                best = h
+                route = adjacency
+        self.grid_pt_next.make_normal()
+        self.grid_pt_prev = self.grid_pt_next
+        for star in self.stars:
+            if star.index == route:
+                print(route)
+                index = route - self.current
+                if index == -1:
+                    self.v = Vector(-1, 0)
+                elif index == 1:
+                    self.v = Vector(1, 0)
+                elif index == -11:
+                    self.v = Vector(0, 1)
+                elif index == 11:
+                    self.v = Vector(0, -1)
+                self.grid_pt_next = star
+                self.current = route
+                break
 
-    # def draw(): pass
+        self.grid_pt_next.make_next()
+
+
+    def switchToRun(self):
+        pass
+
+    def switchToFlicker(self):
+        pass
+
+    def switchToIdle(self):
+        pass
+
+    def die(self):
+        pass
+
+    def killPacman(self):
+        pass
+
+    # def update(self):
+    #     destination = self.chase()
+    #     self.grid_pt_next.make_normal()
+    #     self.grid_pt_prev = self.grid_pt_next
+    #     for star in self.stars:
+    #         if star.index == destination:
+    #             index = destination - self.current
+    #             if index == -1:
+    #                 self.v = Vector(-1, 0)
+    #             elif index == 1:
+    #                 self.v = Vector(1, 0)
+    #             elif index == -11:
+    #                 self.v = Vector(0, -1)
+    #             elif index == 11:
+    #                 self.v = Vector(0, 1)
+    #             self.grid_pt_next = star
+    #             self.current = destination
+    #             break
+    #
+    #     self.grid_pt_next.make_next()
+    #
+    #     delta = self.pt - self.grid_pt_next.pt
+    #     # print(f'         delta is: {delta} and mag is {delta.magnitude()}')
+    #     if delta.magnitude() > 0:
+    #         # print(f'changing location... --- with velocity {self.v}')
+    #         self.prev = self.pt
+    #         self.pt += self.scale_factor * self.v
+    #     self.clamp()
+    #     if self.pt != self.last:
+    #         print(f'{self.name}@{self.pt} -- next is: {self.grid_pt_next.pt}')
+    #         self.last = self.pt
+    #     self.rect.centerx, self.rect.centery = self.pt.x, self.pt.y
+    #     self.draw()
+
+    # def draw(self):
+    #     self.screen.blit(self.image, self.rect)
