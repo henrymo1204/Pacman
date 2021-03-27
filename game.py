@@ -79,8 +79,8 @@ class Game:
                                                                                               (48, 400, [47, 49]),
                                                                                               (49, 450, [48, 50]),
                                                                                               (50, 500, [49, 51]),
-                                                                                              (51, 590, [62, 50, 40]),
-                                                                                              (52, 690, [41, 53])]]
+                                                                                              (51, 590, [40, 50, 62]),
+                                                                                              (52, 690, [41, 63])]]
         self.stars5 = [GridPoint(game=self, pt=Vector(x, 445),
                                  index=index, adj_list=adj_list) for (index, x, adj_list) in [(55, 70,  [65, 56]),
                                                                                               (56, 120, [55, 57]),
@@ -181,7 +181,7 @@ class Game:
             if self.last_updated is None:
                 self.last_updated = pg.time.get_ticks()
                 self.ghost.chase()
-            elif now > self.last_updated + 3000:
+            elif now > self.last_updated + 1000:
                 self.ghost.chase()
                 self.last_updated = pg.time.get_ticks()
             self.ghost.update()

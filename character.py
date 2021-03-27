@@ -70,17 +70,20 @@ class Character:
         # print(f'{self.pt} with dims={self.pt.dims} and {self.pt_next} with dims={self.pt.dims}')
         delta = self.pt - self.grid_pt_next.pt
         # print(f'         delta is: {delta} and mag is {delta.magnitude()}')
-        if delta.magnitude() > 0:
+        if delta.magnitude() > 3:
             # print(f'changing location... --- with velocity {self.v}')
             self.prev = self.pt
-            self.pt += self.scale_factor * self.v
+            self.pt += self.scale_factor * self.v * 3
         self.clamp()
-        if self.pt.x == 0:
+        if self.pt.x <= 0:
             self.pt = Vector(900, 445)
-        elif self.pt.x == 900:
+        elif self.pt.x >= 900:
             self.pt = Vector(0, 445)
         if self.pt != self.last:
             print(f'{self.name}@{self.pt} -- next is: {self.grid_pt_next.pt}')
+            self.last = self.pt
+        else:
+            self.pt = self.grid_pt_next.pt
             self.last = self.pt
         self.rect.centerx, self.rect.centery = self.pt.x, self.pt.y
         self.draw()
