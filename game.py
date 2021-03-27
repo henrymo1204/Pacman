@@ -183,7 +183,7 @@ class Game:
             if self.last_updated is None:
                 self.last_updated = pg.time.get_ticks()
                 self.ghost.chase()
-            elif now > self.last_updated + 1000:
+            elif now > self.last_updated + 3000:
                 self.ghost.chase()
                 self.last_updated = pg.time.get_ticks()
             self.ghost.update()
