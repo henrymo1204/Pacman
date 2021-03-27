@@ -8,7 +8,7 @@ di = {pg.K_RIGHT: Vector(1, 0), pg.K_LEFT: Vector(-1, 0),
       pg.K_UP: Vector(0, -1), pg.K_DOWN: Vector(0, 1)}
 
 
-def check_keydown_events(event, pacman, stars, ghost):
+def check_keydown_events(event, pacman, stars):
     global swapped
     if event.key in li and not swapped:
         v, new_dir = pacman.v, di[event.key]
@@ -62,6 +62,6 @@ def check_events(game):
             mouse_x, mouse_y = pg.mouse.get_pos()
             # check_play_button(stats=game.stats, play_button=game.play_button, mouse_x=mouse_x, mouse_y=mouse_y)
         elif event.type == pg.KEYDOWN:
-            check_keydown_events(event=event, pacman=game.pacman, stars=game.stars_stars, ghost=game.ghost)
+            check_keydown_events(event=event, pacman=game.pacman, stars=game.stars_stars)
         elif event.type == pg.KEYUP:
             check_keyup_events(event=event, pacman=game.pacman)

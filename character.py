@@ -70,7 +70,7 @@ class Character:
         # print(f'{self.pt} with dims={self.pt.dims} and {self.pt_next} with dims={self.pt.dims}')
         delta = self.pt - self.grid_pt_next.pt
         # print(f'         delta is: {delta} and mag is {delta.magnitude()}')
-        if delta.magnitude() > 3:
+        if delta.magnitude() > 1:
             # print(f'changing location... --- with velocity {self.v}')
             self.prev = self.pt
             self.pt += self.scale_factor * self.v * 3
