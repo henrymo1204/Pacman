@@ -137,10 +137,8 @@ class Game:
                                                                                               (109, 830, [108, 98])]]
         self.stars_stars = self.stars + self.stars1 + self.stars2 + self.stars3 + self.stars4 + self.stars5 + self.stars6 + self.stars7 + self.stars8 + self.stars9
 
-        # nxt = self.stars2[5]
-        # prev = self.stars2[5]
-        nxt = self.stars[0]
-        prev = self.stars[0]
+        nxt = self.stars2[5]
+        prev = self.stars2[5]
 
         self.pacman = Pacman(game=self, v=Vector(0, 0), pt=prev.pt, grid_pt_next=nxt, grid_pt_prev=prev)
         self.ghost = Ghost(game=self, v=Vector(0, 0), pt=self.stars6[3].pt, grid_pt_next=self.stars6[3], grid_pt_prev=self.stars6[3], pacman=self.pacman, stars=self.stars_stars)
