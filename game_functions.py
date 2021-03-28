@@ -19,15 +19,15 @@ def check_keydown_events(event, pacman, stars):
         # choose next star for destination
 
         v = di[event.key]
-        delta = (v.x if v.y == 0 else -11 * v.y)
+        delta = (v.x if v.y == 0 else -17 * v.y)
 
         pacman.grid_pt_prev = pacman.grid_pt_next
         index = int(pacman.grid_pt_next.index + delta)
         pacman.grid_pt_next.make_normal()
-        if index == 54:
-            index = 65
-        elif index == 66:
-            index = 55
+        if index == 169:
+            index = 186
+        elif index == 187:
+            index = 170
         for star in stars:
             if star.index == index:
                 if index in pacman.grid_pt_next.adj_list:

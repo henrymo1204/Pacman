@@ -4,7 +4,7 @@ from vector import Vector
 from timer import Timer
 from settings import Settings
 import time
-
+import random
 
 class Character:
     def __init__(self, game, v, pt, grid_pt_next, grid_pt_prev, name, filename, scale):
@@ -121,6 +121,43 @@ class Ghost(Character):
         self.stars = stars
         self.last = pt
         self.current = grid_pt_next.index
+        self.inside = True
+
+    def at_base(self):
+        return self.current == 177 or self.current == 178 or self.current == 179
+
+    def exit(self):
+        if self.current == 178:
+            for star in self.stars:
+                if star.index == 212:
+                    self.grid_pt_next.make_normal()
+                    self.grid_pt_prev = self.grid_pt_next
+                    self.grid_pt_next = star
+                    self.grid_pt_next.make_next()
+                    self.v = Vector(0, -1)
+                    self.current = 212
+        elif self.current == 177:
+            for star in self.stars:
+                if star.index == 178:
+                    self.grid_pt_next.make_normal()
+                    self.grid_pt_prev = self.grid_pt_next
+                    self.grid_pt_next = star
+                    self.grid_pt_next.make_next()
+                    self.v = Vector(1, 0)
+                    self.current = 178
+        elif self.current == 179:
+            for star in self.stars:
+                if star.index == 178:
+                    self.grid_pt_next.make_normal()
+                    self.grid_pt_prev = self.grid_pt_next
+                    self.grid_pt_next = star
+                    self.grid_pt_next.make_next()
+                    self.v = Vector(-1, 0)
+                    self.current = 178
+
+
+    def enter(self):
+        pass
 
     def chase(self):
         best = None
@@ -137,22 +174,20 @@ class Ghost(Character):
         self.grid_pt_prev = self.grid_pt_next
         for star in self.stars:
             if star.index == route:
-                print(route)
                 index = route - self.current
                 if index == -1:
                     self.v = Vector(-1, 0)
                 elif index == 1:
                     self.v = Vector(1, 0)
-                elif index == -11:
+                elif index == -17:
                     self.v = Vector(0, 1)
-                elif index == 11:
+                elif index == 17:
                     self.v = Vector(0, -1)
                 self.grid_pt_next = star
                 self.current = route
                 break
 
         self.grid_pt_next.make_next()
-
 
     def switchToRun(self):
         pass
@@ -161,7 +196,34 @@ class Ghost(Character):
         pass
 
     def switchToIdle(self):
-        pass
+        next_grid = None
+        for adjacency in self.grid_pt_next.adj_list:
+            number = random.randint(0, 3)
+            if number == 0:
+                next_grid = adjacency
+            if next_grid is None:
+                next_grid = adjacency
+
+        for star in self.stars:
+            if star.index == next_grid:
+                index = next_grid - self.current
+                if index == -1:
+                    self.v = Vector(-1, 0)
+                elif index == 1:
+                    self.v = Vector(1, 0)
+                elif index == -17:
+                    self.v = Vector(0, 1)
+                elif index == 17:
+                    self.v = Vector(0, -1)
+                self.grid_pt_next.make_normal()
+                self.grid_pt_prev = self.grid_pt_next
+                self.grid_pt_next = star
+                self.grid_pt_next.make_next()
+                self.current = next_grid
+
+
+
+
 
     def die(self):
         pass
