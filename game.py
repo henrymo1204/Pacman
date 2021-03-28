@@ -166,7 +166,7 @@ class Game:
                                                                                              (16, 830, [15, 33])]]
 
         self.stars1 = [GridPoint(game=self, pt=Vector(x, 878),
-                                 index=index, adj_list=adj_list) for (index, x, adj_list) in [(17, 70, [1, 34]),
+                                 index=index, adj_list=adj_list) for (index, x, adj_list) in [(17, 70, [0, 34]),
                                                                                               (24, 400, [7, 41]),
                                                                                               (26, 500, [9, 43]),
                                                                                               (33, 830, [16, 50])]]
@@ -207,7 +207,7 @@ class Game:
                                                                                               (77, 500, [76, 78, 94]),
                                                                                               (78, 545, [77, 79]),
                                                                                               (79, 590, [62, 78, 80]),
-                                                                                              (80, 640, [79, 80]),
+                                                                                              (80, 640, [79, 81]),
                                                                                               (81, 690, [64, 80, 98]),
                                                                                               (83, 780, [66, 84]),
                                                                                               (84, 830, [83, 101])]]
@@ -376,7 +376,7 @@ class Game:
 
         self.pacman = Pacman(game=self, v=Vector(0, 0), pt=prev.pt, grid_pt_next=nxt, grid_pt_prev=prev)
         self.blinky = Ghost(game=self, v=Vector(0, 0), pt=self.stars12[4].pt, grid_pt_next=self.stars12[4],
-                            grid_pt_prev=self.stars12[4], pacman=self.pacman, stars=self.stars_stars)
+                            grid_pt_prev=self.stars12[4], pacman=self.pacman, stars=self.stars_stars, name='blinky', filename='blinky_up00.png')
         self.pinky = Ghost(game=self, v=Vector(0, 0), pt=self.stars10[6].pt, grid_pt_next=self.stars10[6],
                            grid_pt_prev=self.stars10[6], pacman=self.pacman, stars=self.stars_stars)
         self.inkey = Ghost(game=self, v=Vector(0, 0), pt=self.stars10[7].pt, grid_pt_next=self.stars10[7],

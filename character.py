@@ -17,7 +17,7 @@ class Character:
         self.origimage = self.image
         self.scale_factor = 1.0
         self.v = v
-        self.prev_angle = 90.0
+        self.prev_angle = 270.0
         curr_angle = self.angle()
         delta_angle = curr_angle - self.prev_angle
         self.prev_angle = curr_angle
@@ -112,7 +112,7 @@ class Pacman(Character):
 
 
 class Ghost(Character):
-    def __init__(self, game, v, pt, grid_pt_next, grid_pt_prev, pacman, stars, name="Pinky", filename="alien10.png",
+    def __init__(self, game, v, pt, grid_pt_next, grid_pt_prev, pacman, stars, name="Pinky", filename="alien00.png",
                  scale=0.8):
         super().__init__(game, v=v, pt=pt, grid_pt_next=grid_pt_next, grid_pt_prev=grid_pt_prev, name=name,
                          filename=filename, scale=scale)
