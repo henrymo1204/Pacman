@@ -376,7 +376,7 @@ class Game:
 
         self.pacman = Pacman(game=self, v=Vector(0, 0), pt=prev.pt, grid_pt_next=nxt, grid_pt_prev=prev)
         self.blinky = Ghost(game=self, v=Vector(0, 0), pt=self.stars12[4].pt, grid_pt_next=self.stars12[4],
-                            grid_pt_prev=self.stars12[4], pacman=self.pacman, stars=self.stars_stars, name='blinky', filename='blinky_up00.png')
+                            grid_pt_prev=self.stars12[4], pacman=self.pacman, stars=self.stars_stars, name='blinky', filename='blinky_up0.png')
         self.pinky = Ghost(game=self, v=Vector(0, 0), pt=self.stars10[6].pt, grid_pt_next=self.stars10[6],
                            grid_pt_prev=self.stars10[6], pacman=self.pacman, stars=self.stars_stars)
         self.inkey = Ghost(game=self, v=Vector(0, 0), pt=self.stars10[7].pt, grid_pt_next=self.stars10[7],

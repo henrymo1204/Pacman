@@ -7,7 +7,7 @@ import time
 import random
 
 class Character:
-    def __init__(self, game, v, pt, grid_pt_next, grid_pt_prev, name, filename, scale):
+    def __init__(self, game, v, pt, grid_pt_next, grid_pt_prev, name, filename, scale, angle):
         self.screen, self.screen_rect = game.screen, game.screen.get_rect()
         self.name = name
         self.pt, self.grid_pt_next, self.grid_pt_prev = pt, grid_pt_next, grid_pt_prev
@@ -17,7 +17,7 @@ class Character:
         self.origimage = self.image
         self.scale_factor = 1.0
         self.v = v
-        self.prev_angle = 270.0
+        self.prev_angle = angle
         curr_angle = self.angle()
         delta_angle = curr_angle - self.prev_angle
         self.prev_angle = curr_angle
@@ -93,9 +93,9 @@ class Character:
 
 
 class Pacman(Character):
-    def __init__(self, game, v, pt, grid_pt_next, grid_pt_prev, name="Pacman", filename="ship.bmp", scale=0.55):
+    def __init__(self, game, v, pt, grid_pt_next, grid_pt_prev, name="Pacman", filename="pacman17.png", scale=0.55):
         super().__init__(game=game, name=name, filename=filename, scale=scale,
-                         v=v, pt=pt, grid_pt_next=grid_pt_next, grid_pt_prev=grid_pt_prev)
+                         v=v, pt=pt, grid_pt_next=grid_pt_next, grid_pt_prev=grid_pt_prev, angle=90.0)
 
     def killGhost(self): pass
 
@@ -115,7 +115,7 @@ class Ghost(Character):
     def __init__(self, game, v, pt, grid_pt_next, grid_pt_prev, pacman, stars, name="Pinky", filename="alien00.png",
                  scale=0.8):
         super().__init__(game, v=v, pt=pt, grid_pt_next=grid_pt_next, grid_pt_prev=grid_pt_prev, name=name,
-                         filename=filename, scale=scale)
+                         filename=filename, scale=scale, angle=270.0)
         # self.screen, self.screen_rect = game.screen, game.screen.get_rect()
         self.pacman = pacman
         self.stars = stars
