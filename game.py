@@ -19,8 +19,10 @@ class Game:
         self.font = pg.font.SysFont(None, 48)
 
         self.maze = Maze(game=self)
-        self.last_updated = None
+        self.last_update = None
         self.last_exit = None
+        self.last_idle = None
+        self.isIdle = False
 
         # li = [70, 400, 500, 830]
         # self.stars = []
@@ -251,7 +253,7 @@ class Game:
                                                                                               (144, 450, [143, 145]),
                                                                                               (145, 500, [144, 146]),
                                                                                               (146, 545, [145, 147]),
-                                                                                              (147, 590, [130, 146, 169]),
+                                                                                              (147, 590, [130, 146, 164]),
                                                                                               (149, 690, [132, 166])]]
 
         self.stars9 = [GridPoint(game=self, pt=Vector(x, 493),
@@ -317,7 +319,7 @@ class Game:
                                                                                                (254, 830, [253, 271])]]
 
         self.stars15 = [GridPoint(game=self, pt=Vector(x, 208),
-                                  index=index, adj_list=adj_list) for (index, x, adj_list) in [(255, 70, [239, 272]),
+                                  index=index, adj_list=adj_list) for (index, x, adj_list) in [(255, 70, [238, 272]),
                                                                                                (258, 210, [241, 275]),
                                                                                                (260, 310, [243, 277]),
                                                                                                (266, 590, [249, 283]),
@@ -361,7 +363,7 @@ class Game:
                                                                                                (312, 355, [311, 313]),
                                                                                                (313, 400, [296, 312]),
                                                                                                (315, 500, [298, 316]),
-                                                                                               (316, 545, [315, 316]),
+                                                                                               (316, 545, [315, 317]),
                                                                                                (317, 590, [316, 318]),
                                                                                                (318, 640, [317, 319]),
                                                                                                (319, 690, [302, 318, 320]),
@@ -420,22 +422,67 @@ class Game:
 
             self.pacman.update()
 
+            # now = pg.time.get_ticks()
+            # print(now)
+            # if self.last_update is None and self.last_exit is None and self.last_idle is None:
+            #     self.last_update = pg.time.get_ticks()
+            #     self.last_exit = pg.time.get_ticks()
+            #     self.last_idle = pg.time.get_ticks()
+            #     for ghost in self.ghosts:
+            #         if not ghost.at_base():
+            #             ghost.switchToChase()
+            # elif now > self.last_update + 1200:
+            #     for ghost in self.ghosts:
+            #         if ghost.at_base():
+            #             if now > self.last_exit + 3000:
+            #                 ghost.exit()
+            #                 self.last_exit = pg.time.get_ticks()
+            #         elif now > self.last_idle + 30000:
+            #             ghost.switchToIdle()
+            #             self.isIdle = True
+            #         elif self.isIdle:
+            #             if now > self.last_idle + 40000:
+            #                 self.isIdle = False
+            #                 self.last_idle = pg.time.get_ticks()
+            #             else:
+            #                 ghost.switchToIdle()
+            #                 print('idle')
+            #         else:
+            #             ghost.switchToChase()
+            #     self.last_update = pg.time.get_ticks()
+
             now = pg.time.get_ticks()
-            if self.last_updated is None and self.last_exit is None:
-                self.last_updated = pg.time.get_ticks()
+            print(now)
+            if self.last_update is None and self.last_exit is None and self.last_idle is None:
+                self.last_update = pg.time.get_ticks()
                 self.last_exit = pg.time.get_ticks()
+                self.last_idle = pg.time.get_ticks()
                 for ghost in self.ghosts:
                     if not ghost.at_base():
-                        ghost.switchToIdle()
-            elif now > self.last_updated + 1200:
+                        ghost.chase = True
+                        ghost.a_star()
+            elif now > self.last_update + 1300:
                 for ghost in self.ghosts:
                     if ghost.at_base():
-                        if now > self.last_exit + 5000:
+                        if now > self.last_exit + 3000:
                             ghost.exit()
+                            if not ghost.at_base():
+                                ghost.chase = True
                             self.last_exit = pg.time.get_ticks()
+                    elif now > self.last_idle + 100000 and not ghost.idle:
+                        ghost.chase = False
+                        ghost.idle = True
+                        ghost.performAction()
+                    elif now > self.last_idle + 20000 and ghost.idle:
+                        ghost.idle = False
+                        ghost.chase = True
+                        self.last_idle = pg.time.get_ticks()
+                        ghost.performAction()
                     else:
-                        ghost.switchToIdle()
-                self.last_updated = pg.time.get_ticks()
+                        ghost.performAction()
+
+                self.last_update = pg.time.get_ticks()
+
             for ghost in self.ghosts:
                 ghost.update()
             pg.display.flip()

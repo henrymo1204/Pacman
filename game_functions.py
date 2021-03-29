@@ -15,6 +15,7 @@ def check_keydown_events(event, pacman, stars):
         if not pacman.on_star():
             if v.dot(new_dir) == -1:
                 pacman.reverse()
+                pacman.update_angle()
             return
         # choose next star for destination
 
@@ -36,9 +37,10 @@ def check_keydown_events(event, pacman, stars):
         pacman.grid_pt_next.make_next()
         print(pacman.grid_pt_next.pt)
 
-        pacman.v = di[event.key]
-        pacman.scale_factor = 1.0
-        pacman.update_angle()
+        if not pacman.v == di[event.key]:
+            pacman.v = di[event.key]
+            pacman.scale_factor = 1.0
+            pacman.update_angle()
 
 
 def check_keyup_events(event, pacman):
