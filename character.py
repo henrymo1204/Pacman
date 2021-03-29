@@ -9,11 +9,12 @@ from block import Block
 
 
 class Character:
-    def __init__(self, game, v, pt, grid_pt_next, grid_pt_prev, name, filename, scale, angle):
+    def __init__(self, game, v, pt, grid_pt_next, grid_pt_prev, name, filename, scale, angle, speed):
         self.screen, self.screen_rect = game.screen, game.screen.get_rect()
         self.name = name
         self.pt, self.grid_pt_next, self.grid_pt_prev = pt, grid_pt_next, grid_pt_prev
         self.grid_pt_next.make_next()
+        self.speed = speed
         if name == 'Pacman':
             self.images_up = [pg.image.load('images/pacman_up' + str(i) + '.png') for i in range(18)] + [
                 pg.image.load('images/pacman_up' + str(i) + '.png') for i in reversed(range(18))]
@@ -129,10 +130,10 @@ class Character:
         # print(f'{self.pt} with dims={self.pt.dims} and {self.pt_next} with dims={self.pt.dims}')
         delta = self.pt - self.grid_pt_next.pt
         # print(f'         delta is: {delta} and mag is {delta.magnitude()}')
-        if delta.magnitude() > 1:
+        if delta.magnitude() > 3:
             # print(f'changing location... --- with velocity {self.v}')
             self.prev = self.pt
-            self.pt += self.scale_factor * self.v * 3
+            self.pt += self.scale_factor * self.v * self.speed
         self.clamp()
         if self.pt.x <= 0:
             self.pt = Vector(900, 445)
@@ -158,7 +159,7 @@ class Character:
 class Pacman(Character):
     def __init__(self, game, v, pt, grid_pt_next, grid_pt_prev, name="Pacman", filename="pacman17.png", scale=1):
         super().__init__(game=game, name=name, filename=filename, scale=scale,
-                         v=v, pt=pt, grid_pt_next=grid_pt_next, grid_pt_prev=grid_pt_prev, angle=90.0)
+                         v=v, pt=pt, grid_pt_next=grid_pt_next, grid_pt_prev=grid_pt_prev, angle=90.0, speed=3)
 
     def killGhost(self): pass
 
@@ -178,7 +179,7 @@ class Ghost(Character):
     def __init__(self, game, v, pt, grid_pt_next, grid_pt_prev, pacman, stars, name="Pinky", filename="alien00.png",
                  scale=0.8):
         super().__init__(game, v=v, pt=pt, grid_pt_next=grid_pt_next, grid_pt_prev=grid_pt_prev, name=name,
-                         filename=filename, scale=scale, angle=270.0)
+                         filename=filename, scale=scale, angle=270.0, speed=5)
         # self.screen, self.screen_rect = game.screen, game.screen.get_rect()
         self.pacman = pacman
         self.stars = stars
@@ -250,10 +251,9 @@ class Ghost(Character):
                     current = i
         print('temp:', temp)
         print('route:', self.route)
-        if self.route is None or len(self.route) > len(temp):
-            self.route = temp
-        elif len(self.route) == 0:
-            self.route = temp[1:-1]
+        if self.route is None or len(self.route) == 0 or len(self.route) > len(temp):
+            self.route = temp[1:]
+        print(self.route)
 
     def performAction(self):
         if self.chase:
@@ -287,8 +287,8 @@ class Ghost(Character):
 
             self.grid_pt_next.make_next()
 
-            if len(self.route) == 0:
-                self.a_star()
+            # if len(self.route) == 0:
+            #     self.a_star()
 
             # for star in self.stars:
             #     if star.index == self.current:

@@ -461,7 +461,7 @@ class Game:
                     if not ghost.at_base():
                         ghost.chase = True
                         ghost.a_star()
-            elif now > self.last_update + 1300:
+            elif now > self.last_update + 700:
                 for ghost in self.ghosts:
                     if ghost.at_base():
                         if now > self.last_exit + 3000:
