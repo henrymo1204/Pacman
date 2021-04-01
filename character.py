@@ -247,7 +247,8 @@ class Pacman(Character):
                 print('ate food')
                 self.sound.pause_bg()
                 for ghost in self.ghosts:
-                    ghost.switchToRun()
+                    if not ghost.dead:
+                        ghost.switchToRun()
                 break
 
     def firePortalGun(self, color):
