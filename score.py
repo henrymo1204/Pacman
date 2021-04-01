@@ -6,9 +6,9 @@ class Score:
     def __init__(self, game, stars):
         self.screen = game.screen
         self.stars = stars
-        self.point_image = pg.image.load('images/point.png')
+        self.point_image = pg.image.load('images/point.png') # dot point image
         self.point_rect = self.point_image.get_rect()
-        self.power_pill_image = pg.image.load('images/power_pill.png')
+        self.power_pill_image = pg.image.load('images/power_pill.png') # power image
         self.power_pill_rect = self.power_pill_image.get_rect()
         self.cherry_image = pg.image.load('images/cherry.png')  # x2
         self.cherry_rect = self.cherry_image.get_rect()

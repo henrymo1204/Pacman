@@ -1,6 +1,9 @@
 import sys
 import pygame as pg
 from vector import Vector
+from button import Button
+from menu import Button, Intro, Ufo
+from highscore import HighScoreScreen
 
 swapped = False
 li = [pg.K_RIGHT, pg.K_LEFT, pg.K_UP, pg.K_DOWN]
@@ -67,3 +70,61 @@ def check_events(game):
             check_keydown_events(event=event, pacman=game.pacman, stars=game.stars_stars)
         elif event.type == pg.KEYUP:
             check_keyup_events(event=event, pacman=game.pacman)
+
+def check_play_button(stats, play_button, mouse_x, mouse_y):
+    if play_button.rect.collidepoint(mouse_x, mouse_y):
+        stats.game_active = True
+
+def startup_screen(settings, stats, screen):
+    """Display the startup menu on the screen, return False if the user wishes to quit,
+    True if they are ready to play"""
+    menu = Intro(settings, stats, screen)
+    play_button = Button(settings, screen, 'Play Game', y_factor=0.80)
+    hs_button = Button(settings, screen, 'High Scores', y_factor=0.90)
+    animation = Ufo(settings, screen)
+    intro = True
+
+    while intro:
+        play_button.alter_text_color(*pg.mouse.get_pos())
+        hs_button.alter_text_color(*pg.mouse.get_pos())
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                return False
+            elif event.type == pg.MOUSEBUTTONDOWN:
+                click_x, click_y = pg.mouse.get_pos()
+                stats.game_active = play_button.check_button(click_x, click_y)
+                intro = not stats.game_active
+                animation.set_timer_zero()
+                if hs_button.check_button(click_x, click_y):
+                    ret_hs = high_score_screen(settings, stats, screen)
+                    if not ret_hs:
+                        return False
+        screen.fill(settings.bg_color)
+        menu.draw()
+        hs_button.draw_button()
+        play_button.draw_button()
+
+        animation.draw()
+        animation.update()
+
+        pg.display.flip()
+
+    return True
+
+def high_score_screen(settings, stats, screen):
+    """Display all high scores in a separate screen with a back button"""
+    hs_screen = HighScoreScreen(settings, screen, stats)
+    back_button = Button(settings, screen, 'Back To Menu', y_factor=0.85)
+
+    while True:
+        back_button.alter_text_color(*pg.mouse.get_pos())
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                return False
+            elif event.type == pg.MOUSEBUTTONDOWN:
+                if back_button.check_button(*pg.mouse.get_pos()):
+                    return True
+        screen.fill(settings.bg_color)
+        hs_screen.show_scores()
+        back_button.draw_button()
+        pg.display.flip()

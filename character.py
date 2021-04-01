@@ -6,6 +6,7 @@ from settings import Settings
 import time
 import random
 from block import Block
+from sound import Sound
 
 
 class Character:
@@ -16,6 +17,8 @@ class Character:
         self.grid_pt_next.make_next()
         self.speed = speed
         self.dead = False
+
+
         if name == 'Pacman':
             self.images_up = [pg.image.load('images/pacman_up' + str(i) + '.png') for i in range(18)] + [
                 pg.image.load('images/pacman_up' + str(i) + '.png') for i in reversed(range(18))]
@@ -48,7 +51,7 @@ class Character:
             self.image = timer
 
             self.last = self.pt
-            if self.grid_pt_prev is None: print("PT_PREV IS NONE NONE NONE NONE NONE")
+            #if self.grid_pt_prev is None: print("PT_PREV IS NONE NONE NONE NONE NONE")
             self.rect = self.image.imagerect().get_rect()
             self.rect.centerx, self.rect.centery = pt.x, pt.y
         else:
@@ -71,7 +74,7 @@ class Character:
             curr_angle = self.angle()
             delta_angle = curr_angle - self.prev_angle
             self.prev_angle = curr_angle
-            print(f'>>>>>>>>>>>>>>>>>>>>>>>> PREV ANGLE is {self.prev_angle}')
+            #print(f'>>>>>>>>>>>>>>>>>>>>>>>> PREV ANGLE is {self.prev_angle}')
 
             timer = Timer(frames=self.images_up, wait=200)
             self.image = timer
@@ -163,7 +166,7 @@ class Character:
         elif self.pt.x >= 900:
             self.pt = Vector(0, 445)
         if self.pt != self.last:
-            print(f'{self.name}@{self.pt} -- next is: {self.grid_pt_next.pt}')
+            #print(f'{self.name}@{self.pt} -- next is: {self.grid_pt_next.pt}')
             self.last = self.pt
         else:
             self.pt = self.grid_pt_next.pt
@@ -184,13 +187,19 @@ class Character:
 
 
 class Pacman(Character):
-    def __init__(self, game, v, pt, grid_pt_next, grid_pt_prev, name="Pacman", filename="pacman17.png", scale=1):
+    def __init__(self, game, v, pt, grid_pt_next, grid_pt_prev, stats, sb, settings, sound, name="Pacman", filename="pacman17.png", scale=1):
         super().__init__(game=game, name=name, filename=filename, scale=scale,
                          v=v, pt=pt, grid_pt_next=grid_pt_next, grid_pt_prev=grid_pt_prev, angle=90.0, speed=3)
         self.ghosts = game.ghosts
         self.points = game.score.points
+        self.stats = stats
+        self.sb = sb
+        self.sound = sound
+        self.settings = settings
         self.power_pills = game.score.power_pills
         self.empty = game.score.empty
+        self.game = game
+
 
     def performAction(self, fruit):
         self.eatPoint()
@@ -203,18 +212,31 @@ class Pacman(Character):
             if ghost.run or ghost.flicker:
                 if self.pt == ghost.pt:
                     ghost.die()
+                    self.sound.eat_ghost()
+                    self.stats.score += self.settings.ghost_points
+                    self.sb.check_high_score(self.stats.score)
 
     def eatPoint(self):
         temp = self.points.copy()
+        self.sb.prep_score()
         for point in temp:
             if self.pt == point:
                 self.points.remove(point)
                 self.empty.append(point)
+                self.stats.score += self.settings.points
+                self.sb.check_high_score(self.stats.score)
+                self.sound.eat_points()
+                print(len(temp))
+                if len(temp) == 1:
+                    self.game.reset()
 
     def eatFruit(self, fruit):
         if len(fruit.fruits) > 0:
             if self.pt == fruit.fruits[0]:
                 fruit.fruits = []
+                self.stats.score += self.settings.fruit_points
+                self.sb.check_high_score(self.stats.score)
+                self.sound.eat_fruit()
 
     def eatPowerPill(self):
         temp = self.power_pills.copy()
@@ -222,6 +244,8 @@ class Pacman(Character):
             if self.pt == power_pill:
                 self.power_pills.remove(power_pill)
                 self.empty.append(power_pill)
+                print('ate food')
+                self.sound.pause_bg()
                 for ghost in self.ghosts:
                     ghost.switchToRun()
                 break
@@ -234,7 +258,7 @@ class Pacman(Character):
 
 
 class Ghost(Character):
-    def __init__(self, game, v, pt, grid_pt_next, grid_pt_prev, stars, name="Pinky", filename="alien00.png",
+    def __init__(self, game, v, pt, grid_pt_next, grid_pt_prev, stars, sound, name="Pinky", filename="alien00.png",
                  scale=0.8):
         super().__init__(game, v=v, pt=pt, grid_pt_next=grid_pt_next, grid_pt_prev=grid_pt_prev, name=name,
                          filename=filename, scale=scale, angle=270.0, speed=5)
@@ -242,6 +266,8 @@ class Ghost(Character):
         self.stars = stars
         self.last = pt
         self.current = grid_pt_next.index
+        self.sound=sound
+        self.game = game
 
         self.idle = False
         self.flicker = False
@@ -307,8 +333,8 @@ class Ghost(Character):
                 if i.star.index == current.previous:
                     temp.insert(0, i.star.index)
                     current = i
-        print('temp:', temp)
-        print('route:', self.route)
+        #print('temp:', temp)
+        #print('route:', self.route)
         # if self.route is None or len(self.route) == 0 or len(self.route) > len(temp):
         if self.route is None or len(self.route) == 0:
             if len(temp) == 1:
@@ -322,26 +348,29 @@ class Ghost(Character):
             #     self.route = temp
             # else:
             self.route = temp[1:]
-        print(self.route)
+        #print(self.route)
         self.previous_pacman = index
 
 
     def performAction(self, pacman):
         pacman = pacman
         if not self.flicker and not self.run and not self.dead:
+            print('pacman dead')
             self.killPacman(pacman)
+        if pacman.dead:
+            self.game.reset()
         if not pacman.dead:
             if self.chase:
-                print('chase')
+            #    print('chase')
 
                 self.a_star(pacman.grid_pt_next.index, pacman.pt)
 
-                if self.name == 'blinky':
-                    print('blinky')
-                print('before route:', self.route)
+            #    if self.name == 'blinky':
+            #        print('blinky')
+            #    print('before route:', self.route)
                 route = self.route[0]
                 del self.route[0]
-                print('after route:', self.route)
+            #    print('after route:', self.route)
 
                 self.grid_pt_next.make_normal()
                 self.grid_pt_prev = self.grid_pt_next
@@ -456,6 +485,8 @@ class Ghost(Character):
                 now = pg.time.get_ticks()
                 if now > self.flicker_time + 3000 and self.on_star():
                     self.switchToChase()
+                    print("switched to chase")
+                    self.sound.unpause_bg()
             else:
                 self.update_angle()
 
@@ -505,7 +536,6 @@ class Ghost(Character):
 
     def switchToChase(self):
         self.chase = True
-
         self.run = False
         self.flicker = False
         self.idle = False
@@ -558,5 +588,8 @@ class Ghost(Character):
     def killPacman(self, pacman):
         if self.current == pacman.grid_pt_next.index:
             pacman.dead = True
-            timer = Timer(frames=pacman.images, wait=200, looponce=True)
+            self.playing_bg = False
+            pg.mixer.music.pause()
+            self.sound.death_sound()
+            timer = Timer(frames=pacman.images, wait=100, looponce=True)
             pacman.image = timer

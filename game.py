@@ -8,6 +8,12 @@ from character import Pacman, Ghost
 from math import atan2
 from timer import Timer
 from score import Score
+import time
+from button import Button
+from game_stats import GameStats
+from sound import Sound
+from scoreboard import Scoreboard
+from settings import Settings
 
 
 class Game:
@@ -18,11 +24,26 @@ class Game:
         pg.display.set_caption("PacMan Portal")
         self.font = pg.font.SysFont(None, 48)
 
+        self.play_button = self.stats = self.sb = None
+        self.sound = Sound(bg_music="sounds/ghost_moving.wav")
+        self.sound.play()
+        self.sound.pause_bg()
+
+        self.restart()
+
+
+    def restart(self):
         self.maze = Maze(game=self)
         self.last_update = None
         self.last_exit = None
         self.last_idle = None
         self.isIdle = False
+
+        self.play_button = Button(settings=self.settings, screen=self.screen, msg="Play")
+        self.stats = GameStats(settings=self.settings)
+        self.sb = Scoreboard(settings=self.settings, screen=self.screen, stats=self.stats)
+
+
 
         self.stars = [GridPoint(game=self, pt=Vector(x, 925),
                                 index=index, adj_list=adj_list) for (index, x, adj_list) in [(0, 70, [1, 17]),
@@ -223,7 +244,7 @@ class Game:
 
         self.stars17 = [GridPoint(game=self, pt=Vector(x, 115),
                                   index=index, adj_list=adj_list) for (index, x, adj_list) in [(289, 70, [272, 306]),
-                                                                                               (292, 210, [285, 309]),
+                                                                                               (292, 210, [275, 309]),
                                                                                                (296, 400, [279, 313]),
                                                                                                (298, 500, [281, 315]),
                                                                                                (302, 690, [285, 319]),
@@ -257,17 +278,17 @@ class Game:
         self.pacman = self.blinky = self.pinky = self.inkey = self.clyde = self.ghosts = None
 
         self.blinky = Ghost(game=self, v=Vector(0, 0), pt=self.stars12[4].pt, grid_pt_next=self.stars12[4],
-                            grid_pt_prev=self.stars12[4], stars=self.stars_stars, name='blinky')
+                            grid_pt_prev=self.stars12[4], stars=self.stars_stars, sound=self.sound, name='blinky')
         self.pinky = Ghost(game=self, v=Vector(0, 0), pt=self.stars10[6].pt, grid_pt_next=self.stars10[6],
-                           grid_pt_prev=self.stars10[6], stars=self.stars_stars, name='pinky')
+                           grid_pt_prev=self.stars10[6], stars=self.stars_stars, sound=self.sound, name='pinky')
         self.inkey = Ghost(game=self, v=Vector(0, 0), pt=self.stars10[7].pt, grid_pt_next=self.stars10[7],
-                           grid_pt_prev=self.stars10[7], stars=self.stars_stars, name='inkey')
+                           grid_pt_prev=self.stars10[7], stars=self.stars_stars, sound=self.sound, name='inkey')
         self.clyde = Ghost(game=self, v=Vector(0, 0), pt=self.stars10[8].pt, grid_pt_next=self.stars10[8],
-                           grid_pt_prev=self.stars10[8], stars=self.stars_stars, name='clyde')
+                           grid_pt_prev=self.stars10[8], stars=self.stars_stars, sound=self.sound, name='clyde')
 
         self.ghosts = [self.blinky, self.inkey, self.pinky, self.clyde]
 
-        self.pacman = Pacman(game=self, v=Vector(0, 0), pt=prev.pt, grid_pt_next=nxt, grid_pt_prev=prev)
+        self.pacman = Pacman(game=self, v=Vector(0, 0), pt=prev.pt, grid_pt_next=nxt, grid_pt_prev=prev, stats=self.stats, sb=self.sb, settings=self.settings, sound=self.sound)
 
         self.grid = self.create_grid()
         self.finished = False
@@ -297,60 +318,80 @@ class Game:
     def play(self):
         while not self.finished:
             gf.check_events(game=self)
-            # self.screen.fill(self.settings.bg_color)
-            self.maze.update()
-            # for star in self.stars_stars:
-            #     star.update()
 
-            self.score.update()
+            if not self.stats.game_active:
+                self.play_button.draw()
+                self.sound.pause_bg()
+                quit_game = not gf.startup_screen(settings=self.settings, stats=self.stats, screen=self.screen)
+                if quit_game:
+                    pg.quit()
+                    break
 
-            self.pacman.performAction(self.score)
-            self.pacman.update()
+            if self.stats.game_active:
+                self.screen.fill(self.settings.bg_color)
+                self.sb.show_score()
+                self.maze.update()
+                self.score.update()
+                self.pacman.performAction(self.score)
+                self.pacman.update()
 
-            if not self.pacman.dead:
-                now = pg.time.get_ticks()
-                print(now)
-                if self.last_update is None and self.last_exit is None and self.last_idle is None:
-                    self.last_update = pg.time.get_ticks()
-                    self.last_exit = pg.time.get_ticks()
-                    self.last_idle = pg.time.get_ticks()
+                if not self.pacman.dead:
+                    now = pg.time.get_ticks()
+                    if self.last_update is None and self.last_exit is None and self.last_idle is None:
+                        self.last_update = pg.time.get_ticks()
+                        self.last_exit = pg.time.get_ticks()
+                        self.last_idle = pg.time.get_ticks()
+                        for ghost in self.ghosts:
+                            if not ghost.at_base():
+                                ghost.chase = True
+                                # ghost.a_star(self.pacman)
+                    elif now > self.last_update + 700:
+                        for ghost in self.ghosts:
+                            if ghost.at_base():
+                                if now > self.last_exit + 3000:
+                                    ghost.exit()
+                                    if not ghost.at_base():
+                                        ghost.chase = True
+                                    self.last_exit = pg.time.get_ticks()
+                            elif now > self.last_idle + 100000 and not ghost.idle:
+                                ghost.chase = False
+                                ghost.idle = True
+                                ghost.performAction(self.pacman)
+                            elif now > self.last_idle + 20000 and ghost.idle:
+                                ghost.idle = False
+                                ghost.chase = True
+                                self.last_idle = pg.time.get_ticks()
+                                ghost.performAction(self.pacman)
+                            else:
+                                ghost.performAction(self.pacman)
+
+                        self.last_update = pg.time.get_ticks()
+
                     for ghost in self.ghosts:
-                        if not ghost.at_base():
-                            ghost.chase = True
-                            # ghost.a_star(self.pacman)
-                elif now > self.last_update + 700:
-                    for ghost in self.ghosts:
-                        if ghost.at_base():
-                            if now > self.last_exit + 3000:
-                                ghost.exit()
-                                if not ghost.at_base():
-                                    ghost.chase = True
-                                self.last_exit = pg.time.get_ticks()
-                        elif now > self.last_idle + 100000 and not ghost.idle:
-                            ghost.chase = False
-                            ghost.idle = True
-                            ghost.performAction(self.pacman)
-                        elif now > self.last_idle + 20000 and ghost.idle:
-                            ghost.idle = False
-                            ghost.chase = True
-                            self.last_idle = pg.time.get_ticks()
-                            ghost.performAction(self.pacman)
-                        else:
-                            ghost.performAction(self.pacman)
+                        ghost.update()
 
-                    self.last_update = pg.time.get_ticks()
+                if self.pacman.dead:
+                    if self.pacman.image.frame_index() == len(self.pacman.images):
+                        self.reset()
+                if not self.sound.playing_bg:
+                    self.sound.unpause_bg()
 
-                for ghost in self.ghosts:
-                    ghost.update()
 
-            if self.pacman.dead:
-                if self.pacman.image.frame_index() == len(self.pacman.images):
-                    self.finished = True
 
             pg.display.flip()
 
         print('finish')
 
+    def reset(self):
+        if self.stats.lives_left != 0:
+            self.stats.lives_left -= 1
+            self.sb.prep_lives()
+            time.sleep(1)
+        else:
+            self.stats.game_active = False
+            self.stats.save_high_score()
+            self.sound.pause_bg()
+            self.restart()
 
 def main():
     game = Game()
