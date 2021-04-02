@@ -607,7 +607,7 @@ class Game:
                     if self.pacman.image.frame_index() == len(self.pacman.images) - 1:
                         self.reset()
                         time.sleep(1)
-
+                        self.sound.play()
                 if not self.sound.playing_bg:
                     self.sound.unpause_bg()
 
