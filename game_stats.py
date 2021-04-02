@@ -9,6 +9,7 @@ class GameStats():
         self.level = 1
         self.high_scores_all = None
         self.initialize_high_score()
+        self.lives_left = self.settings.lives_limit
 
     def reset_stats(self):
         self.lives_left = self.settings.lives_limit

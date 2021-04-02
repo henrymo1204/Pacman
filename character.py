@@ -10,13 +10,14 @@ from sound import Sound
 
 
 class Character:
-    def __init__(self, game, v, pt, grid_pt_next, grid_pt_prev, name, filename, scale, angle, speed):
+    def __init__(self, game, v, pt, grid_pt_next, grid_pt_prev, name, filename, scale, angle, speed, stars):
         self.screen, self.screen_rect = game.screen, game.screen.get_rect()
         self.name = name
         self.pt, self.grid_pt_next, self.grid_pt_prev = pt, grid_pt_next, grid_pt_prev
         self.grid_pt_next.make_next()
         self.speed = speed
         self.dead = False
+        self.stars = stars
 
 
         if name == 'Pacman':
@@ -28,7 +29,7 @@ class Character:
                 pg.image.load('images/pacman_down' + str(i) + '.png') for i in reversed(range(18))]
             self.images_right = [pg.image.load('images/pacman_right' + str(i) + '.png') for i in range(18)] + [
                 pg.image.load('images/pacman_right' + str(i) + '.png') for i in reversed(range(18))]
-            self.images = [pg.image.load('images/dying_pacman' + str(i) + '.png') for i in range(12)]
+            self.images = [pg.image.load('images/dying_pacman' + str(i) + '.png') for i in range(13)]
 
             self.scale = scale
             self.scale_factor = 1.0
@@ -152,7 +153,7 @@ class Character:
                     timer = Timer(frames=self.images_down, wait=200)
                     self.image = timer
 
-    def update(self):
+    def update(self, portals=None):
         # print(f'{self.pt} with dims={self.pt.dims} and {self.pt_next} with dims={self.pt.dims}')
         delta = self.pt - self.grid_pt_next.pt
         # print(f'         delta is: {delta} and mag is {delta.magnitude()}')
@@ -161,6 +162,39 @@ class Character:
             self.prev = self.pt
             self.pt += self.scale_factor * self.v * self.speed
         self.clamp()
+        if portals:
+            hit = True
+            for portal in portals:
+                if not portal.hit:
+                    hit = False
+            if hit and len(portals) == 2:
+                temp = None
+                for portal in portals:
+                    if self.pt.x == portal.wall.pt.x and self.pt.y == portal.wall.pt.y:
+                        temp = portal
+                if temp:
+                    for portal in portals:
+                        if portal != temp:
+                            self.pt = portal.wall.pt
+                            for adj in portal.wall.adj_list:
+                                for star in self.stars:
+                                    if star.index == adj:
+                                        if self.v == Vector(-1, 0):
+                                            if portal.wall.pt.x > star.pt.x and portal.wall.pt.y == star.pt.y:
+                                                self.grid_pt_next = star
+                                                break
+                                        elif self.v == Vector(1, 0):
+                                            if portal.wall.pt.x < star.pt.x and portal.wall.pt.y == star.pt.y:
+                                                self.grid_pt_next = star
+                                                break
+                                        elif self.v == Vector(0, -1):
+                                            if portal.wall.pt.x == star.pt.x and portal.wall.pt.y > star.pt.y:
+                                                self.grid_pt_next = star
+                                                break
+                                        elif self.v == Vector(0, 1):
+                                            if portal.wall.pt.x == star.pt.x and portal.wall.pt.y < star.pt.y:
+                                                self.grid_pt_next = star
+                                                break
         if self.pt.x <= 0:
             self.pt = Vector(900, 445)
         elif self.pt.x >= 900:
@@ -187,9 +221,9 @@ class Character:
 
 
 class Pacman(Character):
-    def __init__(self, game, v, pt, grid_pt_next, grid_pt_prev, stats, sb, settings, sound, name="Pacman", filename="pacman17.png", scale=1):
+    def __init__(self, game, v, pt, grid_pt_next, grid_pt_prev, stats, sb, settings, sound, stars, name="Pacman", filename="pacman17.png", scale=1):
         super().__init__(game=game, name=name, filename=filename, scale=scale,
-                         v=v, pt=pt, grid_pt_next=grid_pt_next, grid_pt_prev=grid_pt_prev, angle=90.0, speed=3)
+                         v=v, pt=pt, grid_pt_next=grid_pt_next, grid_pt_prev=grid_pt_prev, angle=90.0, speed=3, stars=stars)
         self.ghosts = game.ghosts
         self.points = game.score.points
         self.stats = stats
@@ -199,7 +233,7 @@ class Pacman(Character):
         self.power_pills = game.score.power_pills
         self.empty = game.score.empty
         self.game = game
-
+        self.in_portal = False
 
     def performAction(self, fruit):
         self.eatPoint()
@@ -244,15 +278,28 @@ class Pacman(Character):
             if self.pt == power_pill:
                 self.power_pills.remove(power_pill)
                 self.empty.append(power_pill)
-                print('ate food')
                 self.sound.pause_bg()
                 for ghost in self.ghosts:
                     if not ghost.dead:
                         ghost.switchToRun()
                 break
 
-    def firePortalGun(self, color):
-        pass
+    def enterPortal(self, portals):
+        if len(portals) == 2:
+            created = True
+            for portal in portals:
+                if not portal.hit:
+                    created = False
+            if created:
+                for portal in portals:
+                    for adj in portal.wall.adj_list:
+                        if adj == self.grid_pt_next.index:
+                            self.grid_pt_prev = self.grid_pt_next
+                            self.grid_pt_next = portal.wall
+                            self.in_portal = True
+
+
+
     # def update(self):  self.draw()
 
     # def draw(): pass
@@ -262,7 +309,7 @@ class Ghost(Character):
     def __init__(self, game, v, pt, grid_pt_next, grid_pt_prev, stars, sound, name="Pinky", filename="alien00.png",
                  scale=0.8):
         super().__init__(game, v=v, pt=pt, grid_pt_next=grid_pt_next, grid_pt_prev=grid_pt_prev, name=name,
-                         filename=filename, scale=scale, angle=270.0, speed=5)
+                         filename=filename, scale=scale, angle=270.0, speed=5, stars=stars)
         # self.screen, self.screen_rect = game.screen, game.screen.get_rect()
         self.stars = stars
         self.last = pt
@@ -273,7 +320,10 @@ class Ghost(Character):
         self.idle = False
         self.flicker = False
         self.run = False
-        self.chase = False
+        if name=='blinky':
+            self.chase = True
+        else:
+            self.chase = False
 
         self.route = None
 
@@ -356,10 +406,7 @@ class Ghost(Character):
     def performAction(self, pacman):
         pacman = pacman
         if not self.flicker and not self.run and not self.dead:
-            print('pacman dead')
             self.killPacman(pacman)
-        if pacman.dead:
-            self.game.reset()
         if not pacman.dead:
             if self.chase:
             #    print('chase')
@@ -592,5 +639,6 @@ class Ghost(Character):
             self.playing_bg = False
             pg.mixer.music.pause()
             self.sound.death_sound()
-            timer = Timer(frames=pacman.images, wait=100, looponce=True)
+            timer = Timer(frames=pacman.images, wait=50, looponce=True)
             pacman.image = timer
+            print(pacman.dead)
