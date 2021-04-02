@@ -52,10 +52,11 @@ def check_keydown_events(event, game):
             pacman.scale_factor = 1.0
             pacman.update_angle()
     elif event.key == pg.K_SPACE and not swapped:
-        if len(game.portals) < 2:
-            game.portals.append(Portal(game=game))
-            if len(game.portals) == 2:
-                game.portal_time = pg.time.get_ticks()
+        if game.pacman.v != Vector(0, 0):
+            if len(game.portals) < 2:
+                game.portals.append(Portal(game=game))
+                if len(game.portals) == 2:
+                    game.portal_time = pg.time.get_ticks()
 
 
 def check_keyup_events(event, pacman):

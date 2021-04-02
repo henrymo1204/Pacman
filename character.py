@@ -179,21 +179,29 @@ class Character:
                             for adj in portal.wall.adj_list:
                                 for star in self.stars:
                                     if star.index == adj:
-                                        if self.v == Vector(-1, 0):
+                                        if portal.image == portal.vertical_left:
                                             if portal.wall.pt.x > star.pt.x and portal.wall.pt.y == star.pt.y:
+                                                self.v = Vector(-1, 0)
                                                 self.grid_pt_next = star
+                                                self.update_angle()
                                                 break
-                                        elif self.v == Vector(1, 0):
+                                        elif portal.image == portal.vertical_right:
                                             if portal.wall.pt.x < star.pt.x and portal.wall.pt.y == star.pt.y:
+                                                self.v = Vector(1, 0)
                                                 self.grid_pt_next = star
+                                                self.update_angle()
                                                 break
-                                        elif self.v == Vector(0, -1):
+                                        elif portal.image == portal.horizontal_up:
                                             if portal.wall.pt.x == star.pt.x and portal.wall.pt.y > star.pt.y:
+                                                self.v = Vector(0, -1)
                                                 self.grid_pt_next = star
+                                                self.update_angle()
                                                 break
-                                        elif self.v == Vector(0, 1):
+                                        elif portal.image == portal.horizontal_down:
                                             if portal.wall.pt.x == star.pt.x and portal.wall.pt.y < star.pt.y:
+                                                self.v = Vector(0, 1)
                                                 self.grid_pt_next = star
+                                                self.update_angle()
                                                 break
         if self.pt.x <= 0:
             self.pt = Vector(900, 445)
