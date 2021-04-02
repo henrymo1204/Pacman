@@ -497,9 +497,10 @@ class Game:
 
     def create_characters(self):
         self.last_update = pg.time.get_ticks()
-        self.last_exit = pg.time.get_ticks()
-        self.last_idle = pg.time.get_ticks()
+        self.last_exit = None
+        self.last_idle = None
         self.isIdle = False
+        self.start = True
 
         nxt = self.stars4[7]
         prev = self.stars4[7]
@@ -578,7 +579,12 @@ class Game:
 
                 if not self.pacman.dead:
                     now = pg.time.get_ticks()
-                    if now > self.last_update + 700:
+                    if self.start:
+                        if now > self.last_update + 2000:
+                            self.last_exit = pg.time.get_ticks()
+                            self.last_idle = pg.time.get_ticks()
+                            self.start = False
+                    elif now > self.last_update + 700:
                         for ghost in self.ghosts:
                             if ghost.at_base():
                                 if now > self.last_exit + 3000:
@@ -606,7 +612,6 @@ class Game:
                 if self.pacman.dead:
                     if self.pacman.image.frame_index() == len(self.pacman.images) - 1:
                         self.reset()
-                        time.sleep(1)
                         self.sound.play()
                 if not self.sound.playing_bg:
                     self.sound.unpause_bg()
