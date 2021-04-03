@@ -72,13 +72,6 @@ class Scoreboard():
         self.level_rect.right = self.screen_rect.right - 20
         self.level_rect.top = self.score_rect.bottom + 10
 
-    def prep_level_string(self):
-        self.level_image = self.font.render("Level:", True, self.text_color,
-                                            self.settings.bg_color)
-        self.level_rect = self.level_image.get_rect()
-        self.level_rect.right = self.screen_rect.right - 20
-        self.level_rect.top = self.score_rect.bottom + 10
-
     def prep_lives_string(self):
         self.lives_string_image = self.font.render("Lives:", True, self.text_color,
                                             self.settings.bg_color)

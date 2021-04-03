@@ -151,7 +151,6 @@ class Ufo(Sprite):  # INHERITS from SPRITE
         rect.x, rect.y = self.rect.x, self.rect.y
         self.screen.blit(image, rect)
         # self.screen.blit(self.image, self.rect)
-        print('drawn')
 
     @staticmethod
     def run_tests():

@@ -12,6 +12,7 @@ class Settings():
         self.bullet_height = 30
         self.bullet_color = 255, 0, 0
         self.bullets_every = 300
+        self.speed = 5
 
         """ Points """
         self.score_scale = 1.5
@@ -19,6 +20,9 @@ class Settings():
         self.fruit_points = 50
         self.ghost_points = 100
         self.init_dynamic_settings()
+
+    def reset_speed(self):
+        self.speed = 5
 
     def init_dynamic_settings(self):
         self.ship_speed_factor = 9

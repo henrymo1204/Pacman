@@ -14,6 +14,7 @@ class GameStats():
     def reset_stats(self):
         self.lives_left = self.settings.lives_limit
         self.score = 0
+        self.level = 1
 
     def initialize_high_score(self):
         """Read the saved high score from the json file"""

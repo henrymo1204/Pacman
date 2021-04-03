@@ -28,15 +28,16 @@ class Game:
         self.sound = Sound(bg_music="sounds/ghost_moving.wav")
         self.sound.play()
         self.sound.pause_bg()
+        self.play_button = Button(settings=self.settings, screen=self.screen, msg="Play")
+        self.stats = GameStats(settings=self.settings)
+        self.sb = Scoreboard(settings=self.settings, screen=self.screen, stats=self.stats)
+
 
         self.restart()
 
     def restart(self):
         self.maze = Maze(game=self)
 
-        self.play_button = Button(settings=self.settings, screen=self.screen, msg="Play")
-        self.stats = GameStats(settings=self.settings)
-        self.sb = Scoreboard(settings=self.settings, screen=self.screen, stats=self.stats)
 
         self.stars = [GridPoint(game=self, pt=Vector(x, 925),
                                 index=index, adj_list=adj_list) for (index, x, adj_list) in [(0, 70, [1, 17]),
@@ -508,13 +509,13 @@ class Game:
         self.pacman = self.blinky = self.pinky = self.inkey = self.clyde = self.ghosts = None
 
         self.blinky = Ghost(game=self, v=Vector(0, 0), pt=self.stars12[4].pt, grid_pt_next=self.stars12[4],
-                            grid_pt_prev=self.stars12[4], stars=self.stars_stars, sound=self.sound, name='blinky')
+                            grid_pt_prev=self.stars12[4], stars=self.stars_stars, sound=self.sound, speed=self.settings.speed, name='blinky')
         self.pinky = Ghost(game=self, v=Vector(0, 0), pt=self.stars10[6].pt, grid_pt_next=self.stars10[6],
-                           grid_pt_prev=self.stars10[6], stars=self.stars_stars, sound=self.sound, name='pinky')
+                           grid_pt_prev=self.stars10[6], stars=self.stars_stars, sound=self.sound, speed=self.settings.speed, name='pinky')
         self.inkey = Ghost(game=self, v=Vector(0, 0), pt=self.stars10[7].pt, grid_pt_next=self.stars10[7],
-                           grid_pt_prev=self.stars10[7], stars=self.stars_stars, sound=self.sound, name='inkey')
+                           grid_pt_prev=self.stars10[7], stars=self.stars_stars, sound=self.sound, speed=self.settings.speed, name='inkey')
         self.clyde = Ghost(game=self, v=Vector(0, 0), pt=self.stars10[8].pt, grid_pt_next=self.stars10[8],
-                           grid_pt_prev=self.stars10[8], stars=self.stars_stars, sound=self.sound, name='clyde')
+                           grid_pt_prev=self.stars10[8], stars=self.stars_stars, sound=self.sound, speed=self.settings.speed, name='clyde')
 
         self.ghosts = [self.blinky, self.inkey, self.pinky, self.clyde]
 
@@ -618,17 +619,19 @@ class Game:
 
             pg.display.flip()
 
-        print('finish')
-
     def reset(self):
-        if self.stats.lives_left != 0:
+        if self.stats.lives_left > 1:
             self.stats.lives_left -= 1
             self.sb.prep_lives()
             self.create_characters()
         else:
             self.stats.game_active = False
             self.stats.save_high_score()
+            self.stats.reset_stats()
+            self.sb.prep_lives()
+            self.sb.prep_level()
             self.sound.pause_bg()
+            self.settings.reset_speed()
             self.restart()
 
 

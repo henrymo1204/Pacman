@@ -268,9 +268,11 @@ class Pacman(Character):
                 self.stats.score += self.settings.points
                 self.sb.check_high_score(self.stats.score)
                 self.sound.eat_points()
-                print(len(temp))
-                if len(temp) == 1:
-                    self.game.reset()
+                if len(temp) == 1: # next level
+                    self.game.restart()
+                    self.stats.level += 1
+                    self.sb.prep_level()
+                    self.settings.speed += 0.5
 
     def eatFruit(self, fruit):
         if len(fruit.fruits) > 0:
@@ -314,10 +316,10 @@ class Pacman(Character):
 
 
 class Ghost(Character):
-    def __init__(self, game, v, pt, grid_pt_next, grid_pt_prev, stars, sound, name="Pinky", filename="alien00.png",
+    def __init__(self, game, v, pt, grid_pt_next, grid_pt_prev, stars, sound, speed, name="Pinky", filename="alien00.png",
                  scale=0.8):
         super().__init__(game, v=v, pt=pt, grid_pt_next=grid_pt_next, grid_pt_prev=grid_pt_prev, name=name,
-                         filename=filename, scale=scale, angle=270.0, speed=5, stars=stars)
+                         filename=filename, scale=scale, angle=270.0, speed=speed, stars=stars)
         # self.screen, self.screen_rect = game.screen, game.screen.get_rect()
         self.stars = stars
         self.last = pt

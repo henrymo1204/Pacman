@@ -238,15 +238,13 @@ class Ufo(Sprite):  # INHERITS from SPRITE
 
     def update(self):
         now = pg.time.get_ticks() % 44500
-        print(self.number)
-        print(now)
         if now < 9000:
             if now < 500:
                 self.rect.right = 0
-            print('right')
+
             self.move_right()
         elif now > 9000 and now < 16000:
-            print('left')
+
             self.move_left()
         else:
             self.move_center()
