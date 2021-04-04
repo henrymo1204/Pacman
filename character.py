@@ -241,7 +241,6 @@ class Pacman(Character):
         self.power_pills = game.score.power_pills
         self.empty = game.score.empty
         self.game = game
-        self.in_portal = False
 
     def performAction(self, fruit):
         self.eatPoint()
@@ -301,13 +300,27 @@ class Pacman(Character):
                 if not portal.hit:
                     created = False
             if created:
-                for portal in portals:
-                    for adj in portal.wall.adj_list:
-                        if adj == self.grid_pt_next.index:
-                            self.grid_pt_prev = self.grid_pt_next
-                            self.grid_pt_next = portal.wall
-                            self.in_portal = True
-
+                for i, portal in enumerate(portals):
+                    if portal.image == portal.vertical_right:
+                        for adj in portal.wall.adj_list:
+                            if adj == self.grid_pt_next.index and portal.wall.pt.x < self.pt.x and portal.wall.pt.y == self.pt.y:
+                                self.grid_pt_prev = self.grid_pt_next
+                                self.grid_pt_next = portal.wall
+                    elif portal.image == portal.vertical_left:
+                        for adj in portal.wall.adj_list:
+                            if adj == self.grid_pt_next.index and portal.wall.pt.x > self.pt.x and portal.wall.pt.y == self.pt.y:
+                                self.grid_pt_prev = self.grid_pt_next
+                                self.grid_pt_next = portal.wall
+                    elif portal.image == portal.horizontal_up:
+                        for adj in portal.wall.adj_list:
+                            if adj == self.grid_pt_next.index and portal.wall.pt.x == self.pt.x and portal.wall.pt.y > self.pt.y:
+                                self.grid_pt_prev = self.grid_pt_next
+                                self.grid_pt_next = portal.wall
+                    elif portal.image == portal.horizontal_down:
+                        for adj in portal.wall.adj_list:
+                            if adj == self.grid_pt_next.index and portal.wall.pt.x == self.pt.x and portal.wall.pt.y < self.pt.y:
+                                self.grid_pt_prev = self.grid_pt_next
+                                self.grid_pt_next = portal.wall
 
 
     # def update(self):  self.draw()
@@ -342,9 +355,9 @@ class Ghost(Character):
 
         self.previous_pacman = None
 
-    def a_star(self, index, pt):
-        index = index
-        pt = pt
+    def a_star(self, pacman):
+        index = pacman.grid_pt_next.index
+        pt = pacman.pt
         for star in self.stars:
             if star.index == self.current:
                 open_list = [Block(star.pt.x, star.pt.y, 0, 0, 0, star, None)]
@@ -396,7 +409,8 @@ class Ghost(Character):
                     current = i
         #print('temp:', temp)
         #print('route:', self.route)
-        # if self.route is None or len(self.route) == 0 or len(self.route) > len(temp):
+        # if self.route is None or len(self.route) == 0 or len(self.route) > len(temp)
+
         if self.route is None or len(self.route) == 0:
             if len(temp) == 1:
                 self.route = temp
@@ -414,14 +428,13 @@ class Ghost(Character):
 
 
     def performAction(self, pacman):
-        pacman = pacman
         if not self.flicker and not self.run and not self.dead:
             self.killPacman(pacman)
         if not pacman.dead:
             if self.chase:
             #    print('chase')
 
-                self.a_star(pacman.grid_pt_next.index, pacman.pt)
+                self.a_star(pacman)
 
             #    if self.name == 'blinky':
             #        print('blinky')
